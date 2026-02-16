@@ -134,6 +134,7 @@
       <a class="link" href="index.html">홈으로</a>
       <button type="button" id="addFast">100개 기록 추가</button>
       <button type="button" id="reset">초기화</button>
+      <button type="button" id="autoMoveToggle" aria-pressed="false">자동 이동: OFF</button>
     </div>
 
     <section id="viewport" aria-label="무한 숫자 목록 영역">
@@ -145,7 +146,8 @@
     <div id="sentinel" aria-hidden="true"></div>
     <p class="hint">
       화면에 보이지 않는 숫자 DOM은 제거되어 메모리를 절약합니다.<br />
-      숫자 기록은 총 개수로 유지되고, 화면에 필요할 때만 다시 렌더링됩니다.
+      숫자 기록은 총 개수로 유지되고, 화면에 필요할 때만 다시 렌더링됩니다.<br />
+      자동 이동을 켜면 휠 방향으로 화면이 자동 이동하며, 버튼으로 ON/OFF 할 수 있습니다.
     </p>
   </main>
 
@@ -162,11 +164,17 @@
     const visibleCountEl = document.getElementById('visibleCount');
     const addFastBtn = document.getElementById('addFast');
     const resetBtn = document.getElementById('reset');
+    const autoMoveToggleBtn = document.getElementById('autoMoveToggle');
 
     let totalCount = 0;
     let startIndex = 0;
     let endIndex = 0;
     let rafId = null;
+
+    let autoMoveEnabled = false;
+    let autoMoveDirection = 0;
+    let autoMoveFrameId = null;
+    const AUTO_MOVE_SPEED = 10;
 
     function formatNumber(value) {
       return value.toLocaleString('ko-KR');
@@ -219,6 +227,59 @@
       });
     }
 
+    function updateAutoMoveButton() {
+      autoMoveToggleBtn.textContent = `자동 이동: ${autoMoveEnabled ? 'ON' : 'OFF'}`;
+      autoMoveToggleBtn.setAttribute('aria-pressed', autoMoveEnabled ? 'true' : 'false');
+    }
+
+    function stopAutoMove() {
+      if (autoMoveFrameId) {
+        cancelAnimationFrame(autoMoveFrameId);
+        autoMoveFrameId = null;
+      }
+    }
+
+    function runAutoMove() {
+      if (!autoMoveEnabled || autoMoveDirection === 0) {
+        stopAutoMove();
+        return;
+      }
+
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const nextScrollTop = Math.min(maxScroll, Math.max(0, window.scrollY + autoMoveDirection * AUTO_MOVE_SPEED));
+
+      if (nextScrollTop === window.scrollY) {
+        stopAutoMove();
+        return;
+      }
+
+      window.scrollTo({ top: nextScrollTop, behavior: 'auto' });
+      autoMoveFrameId = requestAnimationFrame(runAutoMove);
+    }
+
+    autoMoveToggleBtn.addEventListener('click', () => {
+      autoMoveEnabled = !autoMoveEnabled;
+
+      if (!autoMoveEnabled) {
+        autoMoveDirection = 0;
+        stopAutoMove();
+      }
+
+      updateAutoMoveButton();
+    });
+
+    window.addEventListener('wheel', (event) => {
+      if (!autoMoveEnabled) {
+        return;
+      }
+
+      autoMoveDirection = event.deltaY >= 0 ? 1 : -1;
+
+      if (!autoMoveFrameId) {
+        autoMoveFrameId = requestAnimationFrame(runAutoMove);
+      }
+    }, { passive: true });
+
     addFastBtn.addEventListener('click', () => growRecords(100));
 
     resetBtn.addEventListener('click', () => {
@@ -248,6 +309,7 @@
     window.addEventListener('scroll', scheduleRender, { passive: true });
     window.addEventListener('resize', scheduleRender);
 
+    updateAutoMoveButton();
     growRecords(BATCH_SIZE);
     loadObserver.observe(sentinel);
   </script>
