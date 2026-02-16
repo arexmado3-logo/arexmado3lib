@@ -11,6 +11,7 @@
       --text: #e6ecff;
       --muted: #98a2c6;
       --accent: #5b8cff;
+
       --line: #27345f;
     }
 
@@ -46,6 +47,8 @@
       justify-content: space-between;
       align-items: center;
       gap: 12px;
+
+      flex-wrap: wrap;
     }
 
     h1 {
@@ -77,6 +80,18 @@
       cursor: pointer;
     }
 
+
+    #viewport {
+      position: relative;
+      min-height: 40vh;
+    }
+
+    #topSpacer,
+    #bottomSpacer {
+      width: 100%;
+      height: 0;
+    }
+
     #numbers {
       list-style: none;
       margin: 0;
@@ -86,12 +101,18 @@
     }
 
     #numbers li {
+
+      height: 52px;
+
       padding: 14px 16px;
       border-radius: 12px;
       background: color-mix(in srgb, var(--card) 92%, black);
       border: 1px solid var(--line);
       font-variant-numeric: tabular-nums;
       font-size: 1.05rem;
+
+      line-height: 22px;
+
     }
 
     #sentinel {
@@ -102,20 +123,148 @@
       margin-top: 12px;
       color: var(--muted);
       font-size: 0.92rem;
+
+      line-height: 1.5;
+
     }
   </style>
 </head>
 <body>
   <header>
     <div class="header-inner">
+
+      <h1>무한 숫자 페이지 (가상 렌더링)</h1>
+      <div class="count">
+        총 기록: <strong id="totalCount">0</strong>개 · 화면 표시: <strong id="visibleCount">0</strong>개
+      </div>
+
       <h1>무한 숫자 페이지 (JavaScript)</h1>
       <div class="count">현재 표시: <strong id="visibleCount">0</strong>개</div>
+
     </div>
   </header>
 
   <main class="wrap">
     <div class="controls">
       <a class="link" href="index.html">홈으로</a>
+i
+      <button type="button" id="addFast">100개 기록 추가</button>
+      <button type="button" id="reset">초기화</button>
+    </div>
+
+    <section id="viewport" aria-label="무한 숫자 목록 영역">
+      <div id="topSpacer" aria-hidden="true"></div>
+      <ul id="numbers" aria-live="polite" aria-label="무한 숫자 목록"></ul>
+      <div id="bottomSpacer" aria-hidden="true"></div>
+    </section>
+
+    <div id="sentinel" aria-hidden="true"></div>
+    <p class="hint">
+      화면에 보이지 않는 숫자 DOM은 제거되어 메모리를 절약합니다.<br />
+      숫자 기록은 총 개수로 유지되고, 화면에 필요할 때만 다시 렌더링됩니다.
+    </p>
+  </main>
+
+  <script>
+    const ITEM_HEIGHT = 60; // li 높이 + gap 근사값
+    const BUFFER = 24;
+    const BATCH_SIZE = 80;
+
+    const numbers = document.getElementById('numbers');
+    const topSpacer = document.getElementById('topSpacer');
+    const bottomSpacer = document.getElementById('bottomSpacer');
+    const sentinel = document.getElementById('sentinel');
+    const totalCountEl = document.getElementById('totalCount');
+    const visibleCountEl = document.getElementById('visibleCount');
+    const addFastBtn = document.getElementById('addFast');
+    const resetBtn = document.getElementById('reset');
+
+    let totalCount = 0;
+    let startIndex = 0;
+    let endIndex = 0;
+    let rafId = null;
+
+    function formatNumber(value) {
+      return value.toLocaleString('ko-KR');
+    }
+
+    function growRecords(amount = BATCH_SIZE) {
+      totalCount += amount;
+      totalCountEl.textContent = formatNumber(totalCount);
+      scheduleRender();
+    }
+
+    function renderWindow() {
+      const viewportHeight = window.innerHeight;
+      const scrollTop = window.scrollY;
+      const visibleItems = Math.ceil(viewportHeight / ITEM_HEIGHT) + BUFFER;
+
+      const nextStart = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - Math.floor(BUFFER / 2));
+      const nextEnd = Math.min(totalCount, nextStart + visibleItems);
+
+      if (nextStart === startIndex && nextEnd === endIndex) {
+        return;
+      }
+
+      startIndex = nextStart;
+      endIndex = nextEnd;
+
+      const fragment = document.createDocumentFragment();
+      for (let i = startIndex; i < endIndex; i += 1) {
+        const li = document.createElement('li');
+        const number = i + 1;
+        li.textContent = `${formatNumber(number)} 번째 숫자`;
+        fragment.appendChild(li);
+      }
+
+      numbers.replaceChildren(fragment);
+      topSpacer.style.height = `${startIndex * ITEM_HEIGHT}px`;
+      bottomSpacer.style.height = `${Math.max(0, (totalCount - endIndex) * ITEM_HEIGHT)}px`;
+      visibleCountEl.textContent = formatNumber(endIndex - startIndex);
+    }
+
+    function scheduleRender() {
+      if (rafId) {
+        return;
+      }
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        renderWindow();
+      });
+    }
+
+    addFastBtn.addEventListener('click', () => growRecords(100));
+
+    resetBtn.addEventListener('click', () => {
+      totalCount = 0;
+      startIndex = 0;
+      endIndex = 0;
+      totalCountEl.textContent = '0';
+      visibleCountEl.textContent = '0';
+      topSpacer.style.height = '0px';
+      bottomSpacer.style.height = '0px';
+      numbers.replaceChildren();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      growRecords(BATCH_SIZE);
+    });
+
+    const loadObserver = new IntersectionObserver((entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting) {
+        growRecords(BATCH_SIZE);
+      }
+    }, {
+      root: null,
+      rootMargin: '1200px 0px',
+      threshold: 0
+    });
+
+    window.addEventListener('scroll', scheduleRender, { passive: true });
+    window.addEventListener('resize', scheduleRender);
+
+    growRecords(BATCH_SIZE);
+    loadObserver.observe(sentinel);
+
       <button type="button" id="addFast">100개 빠르게 추가</button>
       <button type="button" id="reset">초기화</button>
     </div>
@@ -171,6 +320,7 @@
 
     addNumbers(BATCH_SIZE);
     observer.observe(sentinel);
+
   </script>
 </body>
 </html>
