@@ -1,9 +1,16 @@
 # arexmado3lib
-dhis is arexmado3lib
 
-# 아렉스마도3 라이브러리
-이것은 아렉스 마도3의 라이브러리 입니다
+arexmado3lib 저장소에 오신 것을 환영합니다.
 
-## lang
- - [한국어](lang/kr.md)
- - [english](lang/en.md)
+## 아렉스마도3 라이브러리
+이 저장소는 아렉스마도3 관련 자료를 정리하고 공유하기 위한 라이브러리입니다.
+
+## Language
+- [한국어](lang/kr.md)
+- [English](lang/en.md)
+
+
+## Home
+- [홈페이지](index.html)
+
+- [무한 숫자 페이지](long.html)
