@@ -12,3 +12,5 @@ arexmado3lib 저장소에 오신 것을 환영합니다.
 
 ## Home
 - [홈페이지](index.html)
+
+- [무한 숫자 페이지](long.html)
