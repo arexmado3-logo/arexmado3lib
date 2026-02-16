@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>arexmado3lib Home</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0f172a;
+      --card: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #60a5fa;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --text: #1f2937;
+        --muted: #4b5563;
+        --accent: #2563eb;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Noto Sans KR", "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(160deg, var(--bg), #1e293b 70%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    main {
+      width: min(760px, 100%);
+      background: color-mix(in srgb, var(--card) 88%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+      border-radius: 16px;
+      padding: 32px;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 4vw, 2.4rem); }
+    p { margin: 8px 0 0; line-height: 1.6; color: var(--muted); }
+
+    .lang {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    a {
+      display: block;
+      text-decoration: none;
+      padding: 14px 16px;
+      border-radius: 10px;
+      color: var(--text);
+      background: color-mix(in srgb, var(--accent) 18%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+      font-weight: 600;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    a:hover {
+      transform: translateY(-2px);
+      background: color-mix(in srgb, var(--accent) 28%, transparent);
+    }
+
+    footer {
+      margin-top: 22px;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>arexmado3lib</h1>
+    <p>아렉스마도3 자료를 정리하고 커뮤니티와 함께 공유하는 라이브러리입니다.</p>
+    <p>This library organizes Alex Mado 3 resources for community collaboration and sharing.</p>
+
+    <section class="lang" aria-label="Language Links">
+      <a href="lang/kr.md">한국어 문서</a>
+      <a href="lang/en.md">English Documentation</a>
+      <a href="README.md">README 보기</a>
+      <a href="long.html">무한 숫자 페이지</a>
+    </section>
+
+    <footer>© arexmado3lib</footer>
+  </main>
+</body>
+</html>
