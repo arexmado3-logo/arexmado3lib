@@ -10,6 +10,8 @@
       --card: #121a33;
       --text: #e6ecff;
       --muted: #98a2c6;
+      --accent: #5b8cff;
+
       --line: #27345f;
     }
 
@@ -45,6 +47,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 12px;
+
       flex-wrap: wrap;
     }
 
@@ -77,6 +80,7 @@
       cursor: pointer;
     }
 
+
     #viewport {
       position: relative;
       min-height: 40vh;
@@ -97,14 +101,18 @@
     }
 
     #numbers li {
+
       height: 52px;
+
       padding: 14px 16px;
       border-radius: 12px;
       background: color-mix(in srgb, var(--card) 92%, black);
       border: 1px solid var(--line);
       font-variant-numeric: tabular-nums;
       font-size: 1.05rem;
+
       line-height: 22px;
+
     }
 
     #sentinel {
@@ -115,23 +123,31 @@
       margin-top: 12px;
       color: var(--muted);
       font-size: 0.92rem;
+
       line-height: 1.5;
+
     }
   </style>
 </head>
 <body>
   <header>
     <div class="header-inner">
+
       <h1>무한 숫자 페이지 (가상 렌더링)</h1>
       <div class="count">
         총 기록: <strong id="totalCount">0</strong>개 · 화면 표시: <strong id="visibleCount">0</strong>개
       </div>
+
+      <h1>무한 숫자 페이지 (JavaScript)</h1>
+      <div class="count">현재 표시: <strong id="visibleCount">0</strong>개</div>
+
     </div>
   </header>
 
   <main class="wrap">
     <div class="controls">
       <a class="link" href="index.html">홈으로</a>
+i
       <button type="button" id="addFast">100개 기록 추가</button>
       <button type="button" id="reset">초기화</button>
     </div>
@@ -248,6 +264,63 @@
 
     growRecords(BATCH_SIZE);
     loadObserver.observe(sentinel);
+
+      <button type="button" id="addFast">100개 빠르게 추가</button>
+      <button type="button" id="reset">초기화</button>
+    </div>
+
+    <ul id="numbers" aria-live="polite" aria-label="무한 숫자 목록"></ul>
+    <div id="sentinel" aria-hidden="true"></div>
+    <p class="hint">아래로 스크롤하면 숫자가 계속 추가됩니다.</p>
+  </main>
+
+  <script>
+    const numbers = document.getElementById('numbers');
+    const visibleCount = document.getElementById('visibleCount');
+    const sentinel = document.getElementById('sentinel');
+    const addFastBtn = document.getElementById('addFast');
+    const resetBtn = document.getElementById('reset');
+
+    let current = 1;
+    const BATCH_SIZE = 50;
+
+    function addNumbers(batch = BATCH_SIZE) {
+      const fragment = document.createDocumentFragment();
+
+      for (let i = 0; i < batch; i += 1) {
+        const li = document.createElement('li');
+        li.textContent = `${current.toLocaleString('ko-KR')} 번째 숫자`;
+        fragment.appendChild(li);
+        current += 1;
+      }
+
+      numbers.appendChild(fragment);
+      visibleCount.textContent = (current - 1).toLocaleString('ko-KR');
+    }
+
+    addFastBtn.addEventListener('click', () => addNumbers(100));
+
+    resetBtn.addEventListener('click', () => {
+      numbers.innerHTML = '';
+      current = 1;
+      addNumbers(BATCH_SIZE);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting) {
+        addNumbers(BATCH_SIZE);
+      }
+    }, {
+      root: null,
+      rootMargin: '800px 0px',
+      threshold: 0
+    });
+
+    addNumbers(BATCH_SIZE);
+    observer.observe(sentinel);
+
   </script>
 </body>
 </html>
